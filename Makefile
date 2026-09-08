@@ -10,9 +10,13 @@ PYTEST  := $(PYTHON) -m pytest
 BROWSER ?= chromium
 NAME    ?=
 URL     ?=
+BRANCH  ?=
+MSG     ?=
 
-.PHONY: help setup install browsers record record-ipe record-url \
-        play play-all play-headless clean
+.PHONY: help setup install browsers record-ipe record-url \
+        play play-all play-headless \
+        branch save submit \
+        clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -49,6 +53,49 @@ play-all: ## Replay all recorded tests with visible browser
 
 play-headless: ## Replay all recorded tests headless (CI-friendly)
 	$(PYTEST) tests/recorded --browser=$(BROWSER)
+
+# --- Git workflow (branch → record → save → submit PR) -----------------------
+
+branch: ## Create your branch (BRANCH=your-name/feature-name)
+	@test -n "$(BRANCH)" || { echo "Usage: make branch BRANCH=neeraj/create-estimate"; exit 1; }
+	git checkout -b record/$(BRANCH)
+	@echo ""
+	@echo "  You are now on branch: record/$(BRANCH)"
+	@echo "  Next: make record-ipe NAME=my_test"
+	@echo ""
+
+save: ## Save your recorded tests (MSG="what you recorded")
+	@test -n "$(MSG)" || { echo 'Usage: make save MSG="recorded the create estimate flow"'; exit 1; }
+	@CURRENT=$$(git rev-parse --abbrev-ref HEAD); \
+	if [ "$$CURRENT" = "master" ]; then \
+		echo "  ERROR: You are on master. Create a branch first:"; \
+		echo "         make branch BRANCH=your-name/feature-name"; \
+		exit 1; \
+	fi
+	git add tests/recorded/
+	git commit -m "$(MSG)"
+	@echo ""
+	@echo "  Saved. Next: make submit"
+	@echo ""
+
+submit: ## Push your branch and create a pull request
+	@CURRENT=$$(git rev-parse --abbrev-ref HEAD); \
+	if [ "$$CURRENT" = "master" ]; then \
+		echo "  ERROR: You are on master. Create a branch first:"; \
+		echo "         make branch BRANCH=your-name/feature-name"; \
+		exit 1; \
+	fi; \
+	git push -u origin HEAD; \
+	echo ""; \
+	if command -v gh >/dev/null 2>&1; then \
+		TITLE=$$(echo "$$CURRENT" | sed 's|record/||; s|/| — |; s|-| |g'); \
+		gh pr create --base master \
+			--title "Recorded test: $$TITLE" \
+			--body "Automated test recorded with Playwright codegen."; \
+	else \
+		echo "  Now open the link above in your browser to create the Pull Request."; \
+		echo "  (Install GitHub CLI for one-command PRs: brew install gh && gh auth login)"; \
+	fi
 
 # --- Cleanup -----------------------------------------------------------------
 
