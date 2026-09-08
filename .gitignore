@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Playwright / pytest artifacts
+.pytest_cache/
+test-results/
+
+# OS
+.DS_Store
