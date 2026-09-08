@@ -7,6 +7,44 @@ set -Eeuo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+# ---------------------------------------------------------------------------
+# Prerequisite checks — tell the user exactly what's missing and how to fix it
+# ---------------------------------------------------------------------------
+MISSING=()
+
+if ! xcode-select -p &>/dev/null; then
+  MISSING+=("  Xcode Command Line Tools  →  xcode-select --install")
+fi
+
+if ! command -v brew &>/dev/null; then
+  MISSING+=("  Homebrew                   →  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"")
+fi
+
+if ! command -v python3 &>/dev/null; then
+  MISSING+=("  Python 3                   →  brew install python@3.12")
+fi
+
+if ! command -v git &>/dev/null; then
+  MISSING+=("  Git                        →  installed with Xcode Command Line Tools")
+fi
+
+if ! command -v gh &>/dev/null; then
+  MISSING+=("  GitHub CLI (gh)            →  brew install gh  then  gh auth login")
+fi
+
+if [[ ${#MISSING[@]} -gt 0 ]]; then
+  echo ""
+  echo "  Some prerequisites are missing. Install them first:"
+  echo ""
+  for line in "${MISSING[@]}"; do
+    echo "$line"
+  done
+  echo ""
+  echo "  After installing, run 'make setup' again."
+  echo ""
+  exit 1
+fi
+
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 VERSION="$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
 echo "==> Using $PYTHON_BIN (Python $VERSION)"
