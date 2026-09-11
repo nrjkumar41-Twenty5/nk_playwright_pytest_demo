@@ -13,13 +13,26 @@ make save MSG="recorded create estimate flow"  # commit it
 make submit                             # push and open a pull request
 ```
 
-## Prerequisites (new Mac)
+## Prerequisites
+
+### Mac
 
 1. Install Xcode CLI tools: `xcode-select --install`
 2. Install Homebrew: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 3. Install Python: `brew install python@3.12`
 4. Install GitHub CLI: `brew install gh` then `gh auth login`
 5. Clone this repo and run `make setup`
+
+### Windows
+
+1. **Double-click `windows-setup.bat`** (right-click → "Run as administrator")
+   - This automatically installs Python, Git, Make, and GitHub CLI via Chocolatey
+   - It only installs what's missing — safe to re-run
+2. **Close and reopen your terminal** (cmd, PowerShell, or Git Bash) so PATH updates take effect
+3. Run `gh auth login` to connect GitHub
+4. Clone this repo and run `make setup`
+
+That's it — after step 4, all `make` commands work identically on Windows and Mac.
 
 ## The workflow: branch → record → play → save → submit
 

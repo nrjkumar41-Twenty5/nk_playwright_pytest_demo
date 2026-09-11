@@ -7,5 +7,10 @@ __pycache__/
 .pytest_cache/
 test-results/
 
-# OS
+# OS — macOS
 .DS_Store
+
+# OS — Windows
+Thumbs.db
+Desktop.ini
+*.lnk
